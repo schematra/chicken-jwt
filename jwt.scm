@@ -18,15 +18,7 @@
       (and (symbol? k) (assoc (symbol->string k) al))
       (and (string? k) (assoc (string->symbol k) al))))
 
- (let* ((secret "thebigsecretthatsverylong")
-	(payload `((sub . "123456")
-		   (name . "Ada")
-		   (iat . ,(now-seconds))
-		   (exp . ,(+ (now-seconds) 3600))))
-	(tok (make-jwt-hs256 payload secret)))
-   (print tok))
- 
- ;; -----------------------------------------------------------------------------
+  ;; -----------------------------------------------------------------------------
  ;; JWT Encode (HS256)
  ;; -----------------------------------------------------------------------------
  (define (make-jwt-hs256 payload secret
@@ -40,7 +32,7 @@
           (sig-bytes (hmac-sha256
                       (if (string? secret) (string->blob secret) secret)
                       (string->blob signing-input)))
-          (s64 (b64url-encode-bytes sig-bytes)))
+          (s64 (base64-encode-urlsafe (blob->string sig-bytes))))
      (string-append h64 "." p64 "." s64)))
 
  ;; JWT Decode + Verify (HS256)
@@ -59,7 +51,7 @@
           ;; 2) decode
           (h-json  (base64-decode-urlsafe h64))
           (p-json  (base64-decode-urlsafe p64))
-          (sig     (base64-decode-urlsafe s64))
+          (sig     (string->blob (base64-decode-urlsafe s64)))
           (header  (read-json h-json))
           (payload (read-json p-json)))
      ;; 3) alg guard
@@ -72,7 +64,6 @@
             (expected (hmac-sha256
                        (if (string? secret) (string->blob secret) secret)
                        (string->blob signing-input))))
-       (display sig)
        (when (not (blob=? expected sig))
          (error "signature verification failed")))
      ;; 5) claim checks
