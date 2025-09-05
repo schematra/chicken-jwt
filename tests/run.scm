@@ -17,7 +17,7 @@
  (test "creates a jwt"
        jwt-str
        (make-jwt-hs256 payload secret))
- (let-values (((header payload) (jwt-decode-hs256 (build-jwt payload secret 0 100) secret)))
+ (let-values (((header payload) (jwt-validate-hs256 (build-jwt payload secret 0 100) secret)))
    (test "correct decoded payload"
 	 "Ada"
 	 (alist-ref 'name payload))
@@ -25,13 +25,13 @@
 	 "HS256"
 	 (alist-ref 'alg header)))
  (test-error "error when the token has expired"
-       (jwt-decode-hs256 (build-jwt payload secret 0 -100) secret))
+       (jwt-validate-hs256 (build-jwt payload secret 0 -100) secret))
  (test-error "error on malformed encoded token"
-       (jwt-decode-hs256 "foo.bar" "secret"))
+       (jwt-validate-hs256 "foo.bar" "secret"))
  (test-error "error on invalid data"
-       (jwt-decode-hs256 "foo.bar.baz" "secret"))
+       (jwt-validate-hs256 "foo.bar.baz" "secret"))
  (test-error "error when signature check fails"
-	     (jwt-decode-hs256 (build-jwt payload secret) "notthesecret"))
+	     (jwt-validate-hs256 (build-jwt payload secret) "notthesecret"))
  )
 
 (test-exit)
