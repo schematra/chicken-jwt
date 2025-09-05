@@ -31,14 +31,14 @@ This is a CHICKEN Scheme JWT (JSON Web Token) library that implements HS256 (HMA
 chicken-install -n
 ```
 
-**Install (before running tests)**
+**Build & Install**
 ```bash
 chicken-install
 ```
 
 **Run tests**:
 ```bash
-csi -s tests/run.scm
+chicken-install && csi -s tests/run.scm
 ```
 
 **Interactive development**:
