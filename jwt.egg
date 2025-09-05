@@ -1,0 +1,7 @@
+((synopsis "Minimalistic JWT")
+ (category web)
+ (license "BSD")
+ (dependencies base64.urlsafe openssl.hmac)
+ (test-dependencies test)
+ (author "Rolando Abarca")
+ (components (extension jwt)))
