@@ -32,6 +32,36 @@
        (jwt-validate-hs256 "foo.bar.baz" "secret"))
  (test-error "error when signature check fails"
 	     (jwt-validate-hs256 (build-jwt payload secret) "notthesecret"))
+ 
+ ;; Test leeway functionality with corrected logic
+ ;; For exp: token expired if exp < (now - leeway), so token expired 10s ago should pass with 20s leeway
+ (test-assert "token expired within leeway should pass"
+       (let ((now (now-seconds)))
+         (jwt-validate-hs256 (make-jwt-hs256 `((sub . "test") (exp . ,(- now 10))) secret) secret leeway: 20)
+         #t))
+ (test-error "token expired outside leeway should fail"
+       (let ((now (now-seconds)))
+         (jwt-validate-hs256 (make-jwt-hs256 `((sub . "test") (exp . ,(- now 30))) secret) secret leeway: 20)))
+ 
+ ;; Test nbf (not-before) claim with leeway  
+ ;; For nbf: not valid if nbf > (now + leeway), so token valid in 10s should pass with 20s leeway
+ (test-assert "token with nbf claim within leeway should pass"
+       (let ((now (now-seconds)))
+         (jwt-validate-hs256 (make-jwt-hs256 `((sub . "test") (nbf . ,(+ now 10))) secret) secret leeway: 20)
+         #t))
+ (test-error "token with nbf claim outside leeway should fail"  
+       (let ((now (now-seconds)))
+         (jwt-validate-hs256 (make-jwt-hs256 `((sub . "test") (nbf . ,(+ now 30))) secret) secret leeway: 20)))
+ 
+ ;; Test iat (issued-at) claim with leeway
+ ;; For iat: future if iat > (now + leeway), so token issued 10s in future should pass with 20s leeway
+ (test-assert "token with future iat claim within leeway should pass"
+       (let ((now (now-seconds)))
+         (jwt-validate-hs256 (make-jwt-hs256 `((sub . "test") (iat . ,(+ now 10))) secret) secret leeway: 20)
+         #t))
+ (test-error "token with future iat claim outside leeway should fail"
+       (let ((now (now-seconds)))
+         (jwt-validate-hs256 (make-jwt-hs256 `((sub . "test") (iat . ,(+ now 30))) secret) secret leeway: 20)))
  )
 
 (test-exit)

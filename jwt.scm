@@ -185,9 +185,9 @@
             (iat (alist-ref 'iat payload))
             (iss (alist-ref 'iss payload))
             (aud (alist-ref 'aud payload)))
-       (when (and (integer? exp) (> (+ now leeway) exp)) (error "token expired"))
-       (when (and (integer? nbf) (< (- now leeway) nbf)) (error "token not yet valid"))
-       (when (and (integer? iat) (> (- iat leeway) now)) (error "issued in the future"))
+       (when (and (integer? exp) (< exp (- now leeway))) (error "token expired"))
+       (when (and (integer? nbf) (> nbf (+ now leeway))) (error "token not yet valid"))
+       (when (and (integer? iat) (> iat (+ now leeway))) (error "issued in the future"))
        (when (and expected-iss (or (not (string? iss)) (not (string=? iss expected-iss))))
          (error "issuer mismatch"))
        (when (and expected-aud
